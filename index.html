@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello, WebVR! - A-Frame</title>
+    <meta name="description" content="Hello, WebVR! - A-Frame">
+    
+    <script src="https://aframe.io/releases/0.7.0/aframe.min.js"></script>
+<!--     <script src="https://rawgit.com/aframevr/aframe/master/dist/aframe-master.js"></script> -->
+    
+    <!-- teleportation -->
+    <script src="https://unpkg.com/aframe-teleport-controls@0.2.x/dist/aframe-teleport-controls.min.js"></script>
+    
+    <!-- 3D.io -->
+    <script src="https://3d.io/releases/3dio-js/1.x.x/3dio.min.js"></script>
+    
+    <script>
+      AFRAME.registerComponent('control_movement', {
+
+        init: function () {
+          document.querySelector('a-scene').addEventListener('enter-vr', function () {
+            document.querySelector('a-camera').object3D.position.set(0,0,0);
+          });
+          
+          // Reload work around, Oculus Go controller stops responding after re-entering VR
+          // https://github.com/aframevr/aframe/issues/3390
+          document.querySelector('a-scene').addEventListener('exit-vr', function () {
+            window.location.reload(true);
+          });
+          
+          this.TRIGGER_EVENT = 'triggerdown'
+          this.UNTRIGGER_EVENT = 'triggerup'
+          
+          this.TRACKPAD_EVENT = 'trackpaddown'
+          this.UNTRACKPAD_EVENT = 'trackpadup'
+          
+          this.triggered = false
+          this.trackpad = false
+          
+          this.currentPlanePos = document.querySelector('#plane').getAttribute('position')
+          this.triggerStartPos = null
+          this.trackpadStartPos = null
+          
+          this.el.addEventListener(this.TRIGGER_EVENT, e => this.startTrigger(e))
+          this.el.addEventListener(this.UNTRIGGER_EVENT, e => this.endTrigger(e))
+          
+          this.el.addEventListener(this.TRACKPAD_EVENT, e => this.startTrackpad(e))
+          this.el.addEventListener(this.UNTRACKPAD_EVENT, e => this.endTrackpad(e))
+          
+        },
+        
+        startTrigger: function (evt) {
+          this.triggered = true;
+          this.triggerStartPos = this.el.getAttribute('position')
+          this.triggerStartPos_x = this.triggerStartPos.x
+          this.triggerStartPos_y = this.triggerStartPos.y
+          // AFRAME.log('Start Trigger Called at position: ' + this.triggerStartPos_y);
+                                                      
+        },
+        
+        endTrigger: function (evt) {
+          // AFRAME.log('End Trigger Called...');
+          this.triggered = false;
+        },
+        
+        startTrackpad: function (evt) {
+          this.trackpad = true;
+          this.trackpadStartPos = this.el.getAttribute('position')
+          this.trackpadStartPos_z = this.trackpadStartPos.z
+          // AFRAME.log('Start Trigger Called at position: ' + this.trackpadStartPos_z);
+                                                      
+        },
+        
+        endTrackpad: function (evt) {
+          // AFRAME.log('End Trackpad Called...');
+          this.trackpad = false;
+        },
+        
+        tick: function () {
+          
+          if (this.triggered || this.trackpad){
+            var plane = document.querySelector('#plane');
+            var currentPosPlane = plane.getAttribute('position');
+            var controller = document.querySelector('#controller');
+            var currentPosController = controller.getAttribute('position');
+          }
+          
+          if (this.triggered){
+            // AFRAME.log('Holding trigger...');
+            var triggerPosDiff_x = (currentPosController.x - this.triggerStartPos_x)
+            var triggerPosDiff_y = (currentPosController.y - this.triggerStartPos_y)
+            
+            plane.object3D.position.x += triggerPosDiff_x
+            plane.object3D.position.y += triggerPosDiff_y
+            this.triggerStartPos_x = currentPosController.x
+            this.triggerStartPos_y = currentPosController.y
+          }
+          
+          if (this.trackpad){
+            // AFRAME.log('Holding trackpad...');
+            var trackpadPosDiff_z = (currentPosController.z - this.trackpadStartPos_z)
+            plane.object3D.position.z += trackpadPosDiff_z
+            this.trackpadStartPos_z = currentPosController.z
+            
+          }
+          
+        }
+      });
+
+    
+    </script>
+
+    
+  </head>
+  <body>
+<!--     <a-scene> -->
+    <a-scene antialias="true">
+      
+      <a-assets>
+        <img crossorigin="anonymous" id="fly" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2Ffly_clipped.jpg?1537335720685">
+        
+        <img crossorigin="anonymous" id="credo-1" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2FDSC_1089.2.jpg?1518829684772">
+        <img crossorigin="anonymous" id="credo-2" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2FDSC_1056edit1.jpg?1518829749864">
+        <img crossorigin="anonymous" id="credo-3" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2FDSC_00445%2Bcopy.jpg?1518829765145">
+        <img crossorigin="anonymous" id="credo-4" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2FDSC_0406%2B5bright.jpg?1518829809577">
+        <img crossorigin="anonymous" id="credo-5" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2Fcruc%2Bstatue%2Bjpg12.jpg?1518829787731">
+        
+        <img crossorigin="anonymous" id="environments-1" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2FIMG_0155%20edit%202%2012-7-17.jpg?1519345973565">
+        
+        <img crossorigin="anonymous" id="context_1" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2F1%20-%20Context%201.JPG?1519346156355">
+        <img crossorigin="anonymous" id="placement_1" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2F2%20-%20Placement%201.jpg?1519346174660">
+        <img crossorigin="anonymous" id="perception_4" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2F3%20-%20Perception%204.jpg?1519346183721">
+        
+        <img crossorigin="anonymous" id="epoch_1" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2FEpoch%201.jpg?1519346689881">
+        <img crossorigin="anonymous" id="epoch_2" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2FEpoch%202.jpg?1519346705860">
+        
+        <img crossorigin="anonymous" id="grief_1" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2FG1%20-%20%209x12%20inches.jpeg?1519347309040">
+        <img crossorigin="anonymous" id="grief_2" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2FG2.jpeg?1519347316626">
+        <img crossorigin="anonymous" id="grief_3" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2FG3.jpeg?1519347324399">
+        <img crossorigin="anonymous" id="grief_4" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2FG4.jpeg?1519347329739">
+        <img crossorigin="anonymous" id="grief_5" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2FG5.jpeg?1519347337746">
+        
+        <img crossorigin="anonymous" id="blue_penguin_logo" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2Fbluepenguin_logo.png?1519499846128">
+        <img crossorigin="anonymous" id="matt" src="https://cdn.glitch.com/2c53c3e6-8713-41e0-9207-4b5c8c195aff%2FMatthew%2BMcHugh%2BArtist.jpg?1519502306234">
+        
+        
+        </a-assets>
+      
+<!--       <a-entity position="0 1.7 -0.1">
+          <a-entity control_movement id="controller" oculus-go-controls daydream-controls></a-entity>
+        </a-entity> -->
+      
+      <a-entity id="cameraWrapper" position="0 0 0">
+        <a-camera id="plane">
+        </a-camera>
+        
+        
+        
+        <a-entity windows-motion-controls="hand: left" teleport-controls="type: parabolic; collisionEntities: .floor">
+        </a-entity>
+          
+        <a-entity windows-motion-controls="hand: right" teleport-controls="type: parabolic; collisionEntities: .floor">
+          <!-- Scary flashlight -->
+          <!-- a-light light="penumbra: 0.5; intensity: 0.5; angle: 20; type: spot; color: #bbbab3"></a-light -->
+          <!-- a-light position="1.152 1 -11.872" light="intensity:0.31999999999999995;color:blue;type:point"></a-light>
+          <a-light position="0 0 0" light="intensity:0.31999999999999995;color:#f7f7f4;type:ambient"></a-light -->
+        </a-entity>
+        
+        <!-- a-entity daydream-controls teleport-controls="type: parabolic;"></a-entity -->
+        
+      </a-entity>
+      
+      <!-- Artwork -->
+      <a-entity id="left_wall" position="-1.474 1.581 -8.121" rotation="0 90 0">
+        
+        
+        <a-image src="#fly" width="0.9144" height="1.2192" position="-8.039 0 0" geometry="height:1.219;width:0.914">
+          <a-entity io3d-interior="material_Frame:Black; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -1.673 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.918 1.201 1"></a-entity>
+        </a-image>
+      
+        <a-image material="" src="#credo-1" width="0.9144" height="1.2192" geometry="width:0.914;height:1.219">
+          <a-entity io3d-interior="material_Frame:Black; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -1.673 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.918 1.201 1"></a-entity>
+        </a-image>
+          
+        <a-image src="#credo-2" position="1.75 0 0" width="0.9144" height="1.2192">
+          <a-entity io3d-interior="material_Frame:Black; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -1.673 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.918 1.201 1"></a-entity>
+        </a-image>
+        
+        <a-image src="#credo-3" position="3.5 0 0" width="0.9144" height="1.2192">
+          <a-entity io3d-interior="material_Frame:Black; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -1.673 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.918 1.201 1"></a-entity>
+        </a-image>
+        
+        <a-image src="#credo-4" position="5.25 0 0" width="0.9144" height="1.2192">
+          <a-entity io3d-interior="material_Frame:Black; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -1.673 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.918 1.201 1"></a-entity>
+        </a-image>
+        <a-image src="#credo-5" position="7 0 0" width="0.9144" height="1.2192">
+          <a-entity io3d-interior="material_Frame:Black; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -1.673 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.918 1.201 1"></a-entity>
+        </a-image>
+      </a-entity>
+      
+      <a-entity id="front_wall" position="2.516 1.571 -16.613">
+        <a-image material="shader:flat" src="#environments-1" scale="1.5 1.5 1.5" width="1.524" height="1.219">
+          <a-entity io3d-interior="material_Frame:Black; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="2.125 -0.001 -0.009" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="1.209 1.519 1.317" rotation="0 0 90.01166961505233"></a-entity>
+        </a-image>
+      </a-entity>
+      
+      <a-entity id="right_wall" position="7.134 1.581 -13.828" rotation="0 -90 0">
+        <a-image material="shader:flat" src="#context_1" width="0.9144" height="1.2192">
+          <a-entity io3d-interior="material_Frame:Black; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -1.673 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.918 1.201 1"></a-entity>
+        </a-image>
+        
+        <a-image material="shader:flat" src="#placement_1" position="2.25 0 0" rotation="0 0 0" height="0.9144" width="1.2192">
+          <a-entity io3d-interior="material_Frame:Black; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="1.687 -0.001 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.918 1.201 1" rotation="0 0 90"></a-entity>
+        </a-image>
+        
+        <a-image material="shader:flat" src="#perception_4" position="4.5 0 0" rotation="0 0 0" width="0.9144" height="1.2192">
+          <a-entity io3d-interior="material_Frame:Black; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -1.673 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.918 1.201 1"></a-entity>
+        </a-image>
+      </a-entity>
+      
+      <a-entity id="back_wall" position="4.915 1.581 -6.199" rotation="0 180 0">
+        <a-image material="shader:flat" src="#epoch_1" width="0.9144" height="1.2192">
+          <a-entity io3d-interior="material_Frame:Black; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -1.673 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.918 1.201 1"></a-entity>
+        </a-image>
+        
+        <a-image material="shader:flat" src="#epoch_2" position="2.25 0 0" rotation="0 0 0" width="0.9144" height="1.2192">
+          <a-entity io3d-interior="material_Frame:Black; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -1.673 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.918 1.201 1"></a-entity>
+        </a-image>
+      </a-entity>
+      
+      <a-entity id="atrium_left" position="-1.475 1.551 -1.376" rotation="0 90 0">
+        <a-image material="shader:flat" src="#grief_1" width="0.2286" height="0.3048">
+          <a-entity io3d-interior="material_Frame:Wood; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id: adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -0.423 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.227 0.302 1"></a-entity>
+        </a-image>
+        <a-image material="shader:flat" src="#grief_2" position="0.5 0 0" width="0.2286" height="0.3048">
+          <a-entity io3d-interior="material_Frame:Wood; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id: adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -0.423 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.227 0.302 1"></a-entity>
+        </a-image>
+        <a-image material="shader:flat" src="#grief_3" position="1 0 0" width="0.2286" height="0.3048">
+          <a-entity io3d-interior="material_Frame:Wood; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id: adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -0.423 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.227 0.302 1"></a-entity>
+        </a-image>
+        <a-image material="shader:flat" src="#grief_4" position="1.5 0 0" width="0.2286" height="0.3048">
+          <a-entity io3d-interior="material_Frame:Wood; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id: adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -0.423 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.227 0.302 1"></a-entity>
+        </a-image>
+        <a-image material="shader:flat" src="#grief_5" position="2 0 0" width="0.2286" height="0.3048">
+          <a-entity io3d-interior="material_Frame:Wood; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id: adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -0.423 -0.004" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.227 0.302 1"></a-entity>
+        </a-image>
+      </a-entity>
+      
+      <a-entity id="Logos" position="1.095 1.397 -6.014">
+        <a-text value="MATTHEW MCHUGH
+ARTWORK" color="black" width="2" position="0 0.733 0" text="align:center;letterSpacing:3;width:3.03"></a-text>
+        
+        <a-text value="My work focuses on the human relationship with reality through a variety of interpretations, including locational, circumstantial, and psychological formations of perception. 
+                       
+                       I also explore the edge between the conscious mind and the ambiguity of the subconscious self. 
+                       
+                       My art balances between figurative definition and obscurity, creating questions based on these concepts, rather than creating answers for them." color="black" width="2" position="-0.207 0.21 0" text="letterSpacing:1;width:0.75" id="bio"></a-text>
+        
+        
+        <a-entity id="matt-pic" position="-0.479 -0.353 0" scale="1.6 1.6 1.6">
+          <a-entity io3d-interior="material_Frame:Wood; material_Juniqe gerahmte premium Poster - 120 cm x 120 cmPaper:Paper; " io3d-furniture="id:adc5a904-e3ef-4353-9cd4-a27a735fef43" shadow="cast:false;receive:false" position="0 -0.079 0.005" io3d-uuid="1e3c4768-0c35-4899-9f29-e2be1186eb0e" scale="0.198 0.294 1"> </a-entity>
+          <a-image src="#matt" width="0.1500" height="0.2258" position="0 0.333 0.009" scale="1.313 1.313 1.313" geometry="height:0.226"></a-image>
+        </a-entity>
+        
+        <!-- a-text value="VR Website development by:" color="black" position="0 -0.417 0" text="align:center;value:VR Gallery Created By:;width:1.5"></a-text>
+        <a-image src="#blue_penguin_logo" width="0.970" height="0.332" position="0 -0.712 0"></a-image -->
+        
+      </a-entity>
+      
+      <a-image src="#blue_penguin_logo" width="0.970" height="0.332" position="2.042 1.464 -1.922" rotation="0 270 0" scale="6.141 6.141 6.141" material="opacity:0.12"></a-image>
+        
+        
+      
+      
+      
+
+      
+       
+      
+      <!-- Red directional light shining from the top left. -->
+      <!-- a-light color="white" position="-1 1 0"></a-light>
+      
+      <!-- Dim ambient lighting. -->
+      <!-- a-light type="point" color="blue" position="0 1 0"></a-light -->
+      
+      <!-- Aframe.io default -->
+      <!-- a-entity >
+        <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9" shadow></a-box>
+        <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E" shadow></a-sphere>
+        <a-cylinder position="1 0.75 -3" radius="0.5" height="1.5" color="#FFC65D" shadow></a-cylinder>
+        <a-plane id="ground" position="0 0 0" rotation="-90 0 0" width="4" height="4" color="#7BC8A4" shadow></a-plane>
+        <a-sky color="#ECECEC"></a-sky>
+      </a-entity -->
+      
+      <a-entity class="io3d-level" io3d-uuid="0210eb69-0249-4e31-b1fa-ba0cba7b0abb" position="-16.784 0 -1.265" rotation="0 90 0">
+        <!-- Atrium -->
+        <a-entity io3d-data3d="key:75d9a2ca-ebce-4bfe-bb87-22d3e3e2d977/processing/2018-02-17_04-08-19_pNBGho/lighting.gz.data3d.buffer;lightMapIntensity:1.658;lightMapExposure:0.582" shadow="cast:false" visible="false"></a-entity>
+        <a-entity class="floor" io3d-floor="w:3.55;l:8.15;hCeiling:3;material_top:wood_parquet_oak;material_side:basic-wall;material_ceiling:plaster_smooth_ceiling" position="-3.4000000000000004 0 15.3" io3d-uuid="19b20628-24bd-45af-881a-accf165a704c"></a-entity>
+        <a-entity io3d-wall="h:3;l:8.15;frontHasBase:true;backHasBase:true;material_top:wall_top;material_back:basic-wall;material_front:bricks_white" position="-3.4 0 15.15" io3d-uuid="2a2a12b9-5ab2-4ff7-bdcd-0283e60a787b"></a-entity>
+        <a-entity io3d-wall="h:3;l:8.15;frontHasBase:true;backHasBase:true;material_top:wall_top;material_back:bricks_white;material_front:default_plaster_001" position="-3.35 0 18.85" io3d-uuid="62c8d89b-616d-41a4-b562-df78aeea0531"></a-entity>
+        <a-entity io3d-wall="h:3;l:3.65;frontHasBase:true;backHasBase:true;material_top:wall_top;material_back:bricks_white;material_front:bricks_yellow" position="4.75 0 18.85" rotation="0 90 0" io3d-uuid="54feb2a8-a85e-49ca-9468-ab56af583c04">
+          <a-entity io3d-door="l:1.25;w:0.15;h:2.5;doorAngle:103;material_leaf:doorLeaf-flush-white;material_handle:aluminium;material_threshold:wood_parquet_oak;hinge:left" position="1.8 0 0" io3d-uuid="45de4f3a-4cf1-4b8e-ae4c-e273822b1d79"></a-entity>
+        </a-entity>
+        <a-entity io3d-wall="h:3;l:3.55;frontHasBase:true;backHasBase:true;material_top:wall_top;material_back:default_plaster_001;material_front:bricks_white" position="-3.5 0 18.85" rotation="0 90 0" io3d-uuid="6629300e-affa-4a99-a556-113d2db6c19e"></a-entity>
+        <a-entity io3d-furniture="id:398d8dec-220d-419e-ae87-4d70724695f0; material_Color:Nero" shadow="receive:false" position="0.407 0 18.111" rotation="0 0 0" io3d-uuid="7a868ab7-0359-4335-ab97-68f9fffcf995"></a-entity>
+        
+        <!-- Exhibit -->
+        <a-entity class="floor" io3d-floor="material_top:concrete_black;material_side:basic-wall;material_ceiling:concrete_dark_ceiling;w:8.95;l:10.65;hCeiling:3" position="4.75 0 15.2" io3d-uuid="8800409d-fb24-4989-9aae-4a9e219fbb90"></a-entity>
+        <a-entity io3d-wall="h:3;l:10.7;frontHasBase:true;backHasBase:true;material_top:wall_top;material_back:basic-wall;material_front:bricks_yellow" position="4.75 0 15.15" io3d-uuid="02095378-6526-4874-8cb9-f13a8b1f7a25"></a-entity>
+        <a-entity io3d-wall="h:3;l:8.8;frontHasBase:true;backHasBase:true;material_top:wall_top;material_back:tiles_large_rect_white;material_front:bricks_yellow" position="15.55 0 15.3" rotation="0 270 0" io3d-uuid="a78b5473-d0a0-4555-a304-49da4dad6078"></a-entity>
+        <a-entity io3d-wall="h:3;l:10.8;frontHasBase:true;backHasBase:true;material_top:wall_top;material_back:basic-wall;material_front:bricks_yellow" position="15.55 0 24.1" rotation="0 180 0" io3d-uuid="46adb6a8-06e1-4e5b-8643-dd9034dc7202"></a-entity>
+        <a-entity io3d-wall="h:3;l:5.2;frontHasBase:true;backHasBase:true;material_top:wall_top;material_back:bricks_yellow;material_front:basic-wall" position="4.9 0 18.85" rotation="0 270 0" io3d-uuid="1277112a-590d-456c-97ba-69198843c52b"></a-entity>
+        <a-entity io3d-column="h:3;shape:circle;material_top:wall_top;material_side:basic-wall" position="13.45 0 22.15" io3d-uuid="9d11713f-3eda-4b5e-b3c5-b39be1880ceb"></a-entity>
+        <a-entity io3d-furniture="id:398d8dec-220d-419e-ae87-4d70724695f0; material_Color:Nero" shadow="receive:false" position="9.961 0 17.07" io3d-uuid="a6be9bb6-4ba6-4a91-972d-c49c4b5f8a08"></a-entity>
+        <a-entity io3d-furniture="id:398d8dec-220d-419e-ae87-4d70724695f0; material_Color:Nero" shadow="receive:false" position="13.164 0 19.375" rotation="0 270 0" io3d-uuid="65f36b0f-6928-4661-b53e-c25932481396"></a-entity>
+        <a-entity io3d-interior="" io3d-furniture="id:9ce8547d-59ec-4205-91d8-e578f19d9e63" shadow="receive:false" position="8.0664063 0 20.3125" rotation="0 68 0" io3d-uuid="27785e72-2ebc-49fc-83c6-f9d39f415b72"></a-entity>
+        <a-entity io3d-column="h:3;shape:circle;material_top:wall_top;material_side:basic-wall" position="7.1 0 22.15" io3d-uuid="acfc2666-e904-47c0-9ec5-a85c0f008da5"></a-entity>
+        
+        
+      </a-entity>
+      
+      
+    </a-scene>
+  </body>
+  
+  <!-- script>
+      io3d.scene.getAframeElements('0a0c2c52-4c2a-4ed3-a4d8-aaab86122bf0').then(elems => {
+        document.querySelector('a-scene').appendChild(elems[0])
+      })
+
+  </script -->
+  
+  
+</html>
